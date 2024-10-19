@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { Post } from "../models/post.models.js";
 
 //generate access and refresh token->
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -29,6 +30,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
+// auth routes
 const registerUser = async (req, res) => {
   const { fullname, username, password, email } = req.body;
   console.log("email", email);
@@ -197,6 +199,58 @@ const logoutUser = async (req, res) => {
     .json(new ApiResponse(200, {}, "user logged out"));
 };
 
+//post routes
+
+const createPost = async (req, res) => {
+  const { title, description } = req.body;
+
+  console.log(req.body);
+  let posted = req.files.post[0];
+  console.log("post", posted);
+  let createdBy = req.user._id;
+  console.log(createdBy);
+
+  const postLocalPath = req.files?.post[0]?.path;
+  console.log(postLocalPath);
+
+  if (!postLocalPath) {
+    throw new ApiError(400, "post is required");
+  } else {
+    console.log("images path", postLocalPath);
+  }
+
+  //   console.log("images path", avatarLocalPath);
+
+  const post = await uploadOnCloudinary(postLocalPath);
+  console.log("avatr image", post);
+
+  const user = await Post.create({
+    title,
+    post: post.url || "",
+    description,
+    owner: createdBy,
+  });
+
+  return res.status(201).json(new ApiResponse(200, "posted succesfully", user));
+};
+
+//get user specific post
+
+const userPost = async (req, res) => {
+  const id = req.user._id;
+  console.log(id)
+  let post = await Post.find({ id });
+
+  return res.json({ message: "Post ", success: true, post });
+};
+
+//all post
+const allPost = async (req, res) => {
+  let post = await Post.find();
+
+  return res.json({ message: "allPost ", success: true, post });
+};
+
 //update profile image->
 const updateUserAvatar = async (req, res) => {
   console.log(req.user);
@@ -226,4 +280,13 @@ const updateUserAvatar = async (req, res) => {
     .json(new ApiResponse(200, user, "avatar image updated "));
 };
 
-export { registerUser, loginUser, updateUserAvatar, logoutUser, verifyEmail };
+export {
+  registerUser,
+  loginUser,
+  updateUserAvatar,
+  logoutUser,
+  verifyEmail,
+  createPost,
+  userPost,
+  allPost,
+};

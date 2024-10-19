@@ -2,10 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const PostSchema = new Schema(
   {
-    // videoFile: {
-    //   type: String, //clouniray url
-    //   required: true,
-    // },
+    post: {
+      type: String, //clouniray url
+      required: true,
+    },
 
     // thumbnail: {
     //   type: String, //clouniray url

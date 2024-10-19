@@ -413,6 +413,8 @@ function Feeds() {
         </div>
         <div className="comments text-muted">View all 190 comments</div>
       </div>
+    
+
     </div>
   );
 }
