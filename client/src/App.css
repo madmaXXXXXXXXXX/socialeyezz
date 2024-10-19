@@ -50,6 +50,7 @@ body {
   border-radius: 50%;
   overflow: hidden;
 }
+
 .profile.handle {
   align-items: center;
 }
@@ -150,6 +151,7 @@ main .container .left .profle {
 
 .left .sidebar {
   margin-top: 1 rem;
+  padding-left: 20;
   background: var(--color-white);
   border-radius: var(--card-border-radius);
   height: 50px;
@@ -168,6 +170,7 @@ main .container .left .profle {
   background: var(--color-dark);
   color: var(--color-white);
   border-radius: var(--card-border-radius);
+  padding-left: 20;
 }
 
 .left .sidebar i {
@@ -332,6 +335,46 @@ main .container .left .profle {
 
 .middle .create-post {
   width: 100%;
+  margin-top: 1rem;
+  background: var(--color-white);
+  padding: 0.6rem var(--card-padding);
+  border-radius: var(--border-radius);
+  border: solid grey 0.3px;
+}
+
+.middle .create-post-upper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.middle .attachments {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding-left: 90px;
+  margin-top: 20px;
+}
+
+.middle .attachments .content {
+  display: flex;
+  justify-content: space-between;
+  width: 160px;
+}
+
+.middle .create-post input[type="text"] {
+  justify-self: start;
+  width: 100%;
+  padding-left: 1rem;
+  background: transparent;
+  color: var(--color-dark);
+  margin-right: 1rem;
+  outline: none;
+}
+
+/* .middle .create-post {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -348,7 +391,7 @@ main .container .left .profle {
   background: transparent;
   color: var(--color-dark);
   margin-right: 1rem;
-}
+} */
 
 .middle .feeds .feed {
   background: var(--color-white);
@@ -357,6 +400,7 @@ main .container .left .profle {
   margin: 1rem 0;
   font-size: 0.85rem;
   line-height: 1.5;
+  border: 1px solid black;
 }
 
 .middle .feed .head {
@@ -376,7 +420,7 @@ main .container .left .profle {
 }
 .middle .feed .action-button.interaction-button {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   font-size: 1.4rem;
   margin: 0.6rem;
@@ -574,4 +618,9 @@ main .container .left .profle {
   main .container .right {
     display: none;
   }
+}
+
+
+#other{
+ display: inline;;
 }

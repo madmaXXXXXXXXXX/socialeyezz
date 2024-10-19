@@ -1,33 +1,41 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, json, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function Emailverify() {
   const navigate = useNavigate();
   const [email, setemail] = useState("");
-  const [resp, setresp] = useState();
+  const [resp, setresp] = useState({});
 
   const emailverify = async () => {
-    axios
-      .post("http://localhost:5000/api/v1/users/verifyemail", { email })
-      .then(function (response) {
-        setresp(response.data);
-        // console.log(res);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    const response = await fetch(
+      "http://localhost:5000/api/v1/users/verifyemail",
+      {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, *cors, same-origin
+        // cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("accessToken"),
+          // "Content-Type": "multipart/form-data;",
+        },
+        body: JSON.stringify({ email }),
+      }
+    );
+    let res = await response.json(); // parses JSON response into native JavaScript objects
+    setresp(res);
+    // console.log(resp.success)
+
+    if (res.success === false) {
       navigate("/register");
+    } else {
+      document.getElementById("msg").innerHTML = resp.message;
 
+      navigate("/");
+    }
 
-    // if (resp.success === true) {
-    //   alert("email dont exist");
-
-    //   navigate("/register");
-    // }
-    // alert("email already exist");
-    console.log(resp);
+    console.log(res.success);
   };
 
   return (
@@ -41,6 +49,7 @@ function Emailverify() {
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
           Email
         </h2>
+        <p></p>
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
@@ -57,6 +66,7 @@ function Emailverify() {
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
+            <p style={{ color: "red", fontSize: "small" }} id="msg"></p>
           </div>
 
           <div>
@@ -70,12 +80,12 @@ function Emailverify() {
         </div>
 
         <p className="mt-10 text-center text-sm text-gray-500">
-          Not a member?{" "}
+           
           <a
             href="#"
             className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
           >
-            Start a 14 day free trial
+           
           </a>
         </p>
       </div>

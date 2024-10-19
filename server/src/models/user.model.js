@@ -3,7 +3,6 @@
 import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 
-
 import bcrypt from "bcrypt";
 
 const userSchema = new Schema(
@@ -33,8 +32,11 @@ const userSchema = new Schema(
       type: String, //cloudnary url
       // required: true,
     },
-    
 
+    followers: [],
+    following: [],
+
+    savedPost: [],
     password: {
       type: String,
       required: [true, "Password is required"],
@@ -43,6 +45,7 @@ const userSchema = new Schema(
       type: String,
     },
   },
+
   { timestamps: true }
 );
 
@@ -55,7 +58,6 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.isPassowrdCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
-
 
 userSchema.methods.generateAcceessToken = async function () {
   return jwt.sign(

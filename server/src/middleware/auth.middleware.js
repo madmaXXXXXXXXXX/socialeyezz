@@ -12,7 +12,7 @@ export const verifyJWT = async (req, res , next) => {
     const token = req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer", "");
 
-      console.log(" auth token  ",token)
+      // console.log(" auth token  ",token)
 
     // console.log("auth middleware")
     // console.log(req.cookies)
@@ -23,7 +23,7 @@ export const verifyJWT = async (req, res , next) => {
 
     //decode jwt token
     const decodedToken =  jwt.verify(token, "madmax");
-    console.log("decode",decodedToken)
+    // console.log("decode",decodedToken)
     const user = await User.findById(decodedToken?._id).select(
       "-password -refreshToken"
     );

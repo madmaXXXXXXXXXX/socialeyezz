@@ -7,11 +7,6 @@ const PostSchema = new Schema(
       required: true,
     },
 
-    // thumbnail: {
-    //   type: String, //clouniray url
-    //   required: true,
-    // },
-
     title: {
       type: String,
       required: true,
@@ -21,22 +16,23 @@ const PostSchema = new Schema(
       required: true,
     },
 
-    // duration: {
-    //   type: Number, //clouniray url
-    //   required: true,
-    // },
+    likes: [],
 
-    views: {
-      type: Number,
-      default: 0,
-    },
     isPublished: {
       type: Boolean,
       default: true,
     },
+
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
+    },
+    username: {
+      type: String,
+      required: true,
+    },
+    avatar: {
+      type: String,
     },
   },
   { timestamps: true }

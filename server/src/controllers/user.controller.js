@@ -4,6 +4,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Post } from "../models/post.models.js";
+import mongoose from "mongoose";
+import { Message } from "../models/messages.model.js";
 
 //generate access and refresh token->
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -30,7 +32,8 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
-// auth routes
+// auth routes ->
+
 const registerUser = async (req, res) => {
   const { fullname, username, password, email } = req.body;
   console.log("email", email);
@@ -57,6 +60,7 @@ const registerUser = async (req, res) => {
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
+
     F;
   } else {
     console.log("images path", avatarLocalPath);
@@ -95,9 +99,9 @@ const verifyEmail = async (req, res) => {
   let user = await User.findOne({ email });
 
   if (user) {
-    return res.json({ message: "email exsist", success: false, user });
+    return res.json({ message: "email exsist", success: true, user });
   }
-  return res.json({ message: "email dont exsist ", success: true });
+  return res.json({ message: "email dont exsist ", success: false });
 };
 
 //login user ->
@@ -129,7 +133,8 @@ const loginUser = async (req, res) => {
   const isPasswordValid = await user.isPassowrdCorrect(password);
 
   if (!isPasswordValid) {
-    throw new ApiError(401, "invalid user credentials");
+    // throw new ApiError(401, "invalid user credentials");
+    return res.status(400).json({ message: "invalid cred" });
   }
 
   //function for generation of access  and refresh token
@@ -199,6 +204,100 @@ const logoutUser = async (req, res) => {
     .json(new ApiResponse(200, {}, "user logged out"));
 };
 
+//
+const allUser = async (req, res) => {
+  let currentUser = req.user._id;
+  let user = await User.find({ _id: { $ne: currentUser } });
+  // console.log(user);
+
+  return res.json({ message: "alluser ", success: true, user });
+};
+
+//currentUser
+const loggedUser = async (req, res) => {
+  let user = req.user;
+  return res.json({ message: "current user", user });
+};
+
+//Follow routes
+
+const followUser = async (req, res) => {
+  const { id } = req.body;
+  const _id = req.user._id;
+  console.log(id, _id);
+  if (_id == id) {
+    res.status(403).json("Action Forbidden");
+  } else {
+    try {
+      const followUser = await User.findById(id);
+      const followingUser = await User.findById(_id);
+
+      if (!followUser.followers.includes(_id)) {
+        await followUser.updateOne({ $push: { followers: _id } });
+        await followingUser.updateOne({ $push: { following: id } });
+        res.status(200).json("User followed!");
+      } else {
+        res.status(403).json("you are already following this id");
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
+    }
+  }
+};
+
+const unfollowUser = async (req, res) => {
+  const { id } = req.body;
+  const _id = req.user._id;
+
+  if (_id === id) {
+    res.status(403).json("Action Forbidden");
+  } else {
+    try {
+      const unFollowUser = await User.findById(id);
+      const unFollowingUser = await User.findById(_id);
+
+      if (unFollowUser.followers.includes(_id)) {
+        await unFollowUser.updateOne({ $pull: { followers: _id } });
+        await unFollowingUser.updateOne({ $pull: { following: id } });
+        res.status(200).json("Unfollowed Successfully!");
+      } else {
+        res.status(403).json("You are not following this User");
+      }
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+};
+
+//friends
+
+const freinds = async (req, res) => {
+  const id = req.user._id;
+
+  let followingsId = [];
+
+  let user = await User.find(id).select({ following: 1, _id: 0 });
+
+  console.log(user);
+
+  user.map((obj) => {
+    // console.log("followings are ", obj.following);
+    followingsId = obj.following;
+  });
+
+  let allFollowings = await User.find({ _id: { $in: followingsId } });
+  console.log("info are", allFollowings);
+
+  // console.log("id of followigs are ", followingsId);
+
+  return res.json({
+    message: "freinds are ",
+    allFollowings,
+    success: true,
+  });
+};
+
 //post routes
 
 const createPost = async (req, res) => {
@@ -208,6 +307,8 @@ const createPost = async (req, res) => {
   let posted = req.files.post[0];
   console.log("post", posted);
   let createdBy = req.user._id;
+  let avatar = req.user.avatar;
+  let username = req.user.username;
   console.log(createdBy);
 
   const postLocalPath = req.files?.post[0]?.path;
@@ -229,6 +330,8 @@ const createPost = async (req, res) => {
     post: post.url || "",
     description,
     owner: createdBy,
+    avatar: avatar,
+    username: username,
   });
 
   return res.status(201).json(new ApiResponse(200, "posted succesfully", user));
@@ -238,17 +341,113 @@ const createPost = async (req, res) => {
 
 const userPost = async (req, res) => {
   const id = req.user._id;
-  console.log(id)
-  let post = await Post.find({ id });
+  // console.log(id);
+  let post = await Post.find({ owner: id });
 
   return res.json({ message: "Post ", success: true, post });
 };
 
-//all post
+//all post(community)
 const allPost = async (req, res) => {
   let post = await Post.find();
 
   return res.json({ message: "allPost ", success: true, post });
+};
+
+//get following post
+const getFeedPosts = async (req, res) => {
+  //get userid
+  // search user and its followings
+  // get information of the following user
+
+  const id = req.user._id;
+
+  let followingsId = [];
+
+  let user = await User.find(id).select({ following: 1, _id: 0 });
+
+  // console.log(user.following);
+
+  user.map((obj) => {
+    // console.log("followings are ", obj.following);
+    followingsId = obj.following;
+  });
+
+  let allFollowings = await Post.find({ owner: { $in: followingsId } });
+  // console.log("info are", allFollowings);
+
+  // console.log("id of followigs are ", followingsId);
+
+  return res.json({
+    message: "all post of followings are",
+    allFollowings,
+    success: true,
+  });
+};
+
+const savePost = async (req, res) => {
+  //post id
+  // user save
+
+  let { id } = req.body;
+  let userid = req.user._id;
+  // console.log(postid);
+
+  let post = await Post.findById(id);
+
+  console.log(post);
+  let user = await User.findById(userid);
+  console.log(user.savedPost);
+
+  if (user.savedPost.includes(id)) {
+    await user.updateOne({ $pull: { savedPost: id } });
+    res.status(200).json("Post unaved");
+  } else {
+    await user.updateOne({ $push: { savedPost: id } });
+    res.status(200).json("Post saved");
+  }
+};
+
+//dete post ->
+
+const deletePost = async (req, res) => {
+  //post id
+  // user save
+
+  let { id } = req.body;
+
+  // console.log(postid);
+
+  let post = await Post.findByIdAndDelete(id);
+  return res.json({ message: "Post deleted successfully", post });
+};
+
+//fetch saved post
+const fetchsavedpost = async (req, res) => {
+  const id = req.user._id;
+  // let user = await User.findById(id);
+  let postId = [];
+
+  let user = await User.find(id).select({ savedPost: 1, _id: 0 });
+  // console.log(user);
+
+  // console.log(user.following);
+
+  user.map((obj) => {
+    // console.log("followings are ", obj.following);
+    postId = obj.savedPost;
+  });
+
+  // console.log(postId)
+
+  let allPost = await Post.find({ _id: { $in: postId } });
+  // console.log("info are", allPost);
+
+  return res.json({
+    message: "all post of followings are",
+    allPost,
+    success: true,
+  });
 };
 
 //update profile image->
@@ -280,6 +479,78 @@ const updateUserAvatar = async (req, res) => {
     .json(new ApiResponse(200, user, "avatar image updated "));
 };
 
+const community = async (req, res) => {
+  let id = req.user._id;
+  // console.log(id);
+  let post = await Post.find({ owner: { $ne: id } });
+
+  return res.json({ message: "community post", post });
+};
+
+//Like or dislike
+
+const likePost = async (req, res) => {
+  const { id } = req.body;
+
+  const userId = req.user._id;
+
+  console.log(userId);
+  console.log(id);
+
+  const post = await Post.findById(id);
+
+  if (post.likes.includes(userId)) {
+    await post.updateOne({ $pull: { likes: userId } });
+    res.status(200).json("Post disliked");
+  } else {
+    await post.updateOne({ $push: { likes: userId } });
+    res.status(200).json("Post liked");
+  }
+};
+
+//messages  routes ->
+const sendMessage = async (req, res) => {
+  //get sender id
+  //get message to send
+  //get reciever id
+
+  const { id, message } = req.body; //reciever id and msg
+
+  const userId = req.user._id; // sender id
+
+  console.log("msg send by ->", userId, "to ->", id, "message ->", message);
+
+  let msg = await Message.create({
+    sender: userId,
+    message: message,
+    reciever: id,
+  });
+
+  return res.json({ message: "message sent ", msg, success: true });
+};
+
+const fetchMessage = async (req, res) => {
+  const { id } = req.body; //reciever id and msg
+
+  const userId = req.user._id; // sender id
+  // console.log("sender->" , userId,"rec->",id)
+
+  let msg = await Message.find({
+    // $and: [{ sender: userId }, { reciever: id }],
+    $or: [
+      {
+        $and: [{ sender: userId }, { reciever: id }],
+      },
+      {
+        $and: [{ sender: id }, { reciever: userId }],
+      },
+    ],
+  });
+  // console.log(msg);
+
+  return res.json({ message: "messages fetched", msg, success: true });
+};
+
 export {
   registerUser,
   loginUser,
@@ -289,4 +560,17 @@ export {
   createPost,
   userPost,
   allPost,
+  followUser,
+  allUser,
+  unfollowUser,
+  getFeedPosts,
+  loggedUser,
+  community,
+  likePost,
+  savePost,
+  fetchsavedpost,
+  deletePost,
+  sendMessage,
+  fetchMessage,
+  freinds,
 };

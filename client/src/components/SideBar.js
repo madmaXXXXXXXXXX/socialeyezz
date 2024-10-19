@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Pimg from "../images/profile-8.jpg";
 import { FaHome } from "react-icons/fa";
@@ -11,20 +11,48 @@ import { CiSettings } from "react-icons/ci";
 import { VscSymbolColor } from "react-icons/vsc";
 
 function SideBar() {
+  const [user, setuser] = useState([]);
+
+  const loggedUser = async () => {
+    const response = await fetch(
+      "http://localhost:5000/api/v1/users/loggedUser",
+      {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, *cors, same-origin
+        // cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("accessToken"),
+          // "Content-Type": "multipart/form-data;",
+        },
+      }
+    );
+    let res = await response.json(); // parses JSON response into native JavaScript objects
+    // console.log(res);
+    setuser(res.user);
+
+    // console.log("users", freinds);
+  };
+
+  useEffect(() => {
+    loggedUser();
+  }, []);
+
   return (
     <div>
       <div className="left">
-        <div class="profile">
-          <Link to={'/myprofile'}>
+        {/* <div className="profile ">
+          {/* <Link to={"/myprofile"}>
             <div class="profile-pic">
-              <img src={Pimg} />
+              <img src={user.avatar} />
             </div>
-          </Link>
-          <div class="handle">
-            <h4>Chirag</h4>
-            <p class="text-muted">@chirag</p>
-          </div>
+          </Link> */}
+        <div className="handle mt-2 ml-7">
+          {/* <h4>{user.username}</h4> */}
+          {/* <p class="text-muted">@{user.username}</p> */}
         </div>
+        {/* </div> */}
 
         <div className="sidebar">
           <a className="menu-item active">
@@ -37,80 +65,46 @@ function SideBar() {
             <span>
               <MdOutlineExplore />
             </span>{" "}
-            <h3>Explore</h3>
+            <h3>MyProfile</h3>
           </Link>
-          <a className="menu-item" id="notifications">
+          {/* <a className="menu-item" id="notifications">
             <span>
               <IoIosNotificationsOutline />
             </span>{" "}
-            <h3>Notifications</h3>
-            <div className="notifications-popup">
-              <div>
-                <div className="profile-pic">
-                  <img src="./images/profile-10.jpg" />
-                </div>
-                <div className="notification-body">
-                  <b>Abigail Willey</b> accepted your friend request
-                  <small className="text-muted">2 DAYS AGO</small>
-                </div>
-              </div>
-              <div>
-                <div className="profile-pic">
-                  <img src="./images/profile-11.jpg" />
-                </div>
-                <div className="notification-body">
-                  <b>Varun Nair</b> commented on your post
-                  <small className="text-muted">1 HOUR AGO</small>
-                </div>
-              </div>
-              <div>
-                <div className="profile-pic">
-                  <img src="./images/profile-12.jpg" />
-                </div>
-                <div className="notification-body">
-                  <b>Marry Opmong</b> and 210 other liked your post
-                  <small className="text-muted">4 MINUTES AGO</small>
-                </div>
-              </div>
-              <div>
-                <div className="profile-pic">
-                  <img src="./images/profile-13.jpg" />
-                </div>
-                <div className="notification-body">
-                  <b>Wilson Fisk</b> started following you
-                  <small className="text-muted"> 11 HOURS AGO</small>
-                </div>
-              </div>
-            </div>
-          </a>
-          <a className="menu-item" id="messages-notifications">
+            <h3>Notification</h3>
+          </a> */}
+          <Link
+            to={"/community"}
+            className="menu-item"
+            id="messages-notifications"
+          >
             <FaRegMessage />
-            <h3>Messages</h3>
-          </a>
-          <a className="menu-item ">
+            <h3>Community</h3>
+          </Link>
+          <Link to={"/savedpost"} className="menu-item ">
             <span>
               <CiBookmarkCheck />
             </span>{" "}
-            <h3>Bookmarks</h3>
-          </a>
-          <a className="menu-item ">
+            <h3>Saved</h3>
+          </Link>
+          <Link to={"/chats"} className="menu-item ">
             <span>
               <TbBrandGoogleAnalytics />
             </span>{" "}
-            <h3>Analytics</h3>
-          </a>
-          <a className="menu-item ">
+            <h3>Messages</h3>
+          </Link>
+          {/* <a className="menu-item ">
             <span>
               <VscSymbolColor />
             </span>{" "}
             <h3>Theme</h3>
-          </a>
-          <a className="menu-item ">
+          </a> */}
+          <Link to={"/"} className="menu-item ">
             <span>
               <CiSettings />
             </span>{" "}
-            <h3>Settings</h3>
-          </a>
+            <h3>Logout</h3>
+          </Link>
           <label className="btn btn-primary" htmlFor="create-post">
             Create Post
           </label>

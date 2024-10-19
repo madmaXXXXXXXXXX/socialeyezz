@@ -63,7 +63,7 @@ function Register() {
           alt="Your Company"
         />
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Register your account
+          Register your account At SocialEyezz
         </h2>
       </div>
 
@@ -141,7 +141,7 @@ function Register() {
             <div className="mt-2">
               <input
                 id="password"
-                name="password"
+                name="uername"
                 type="text"
                 autoComplete="current-password"
                 required
